@@ -1,6 +1,6 @@
 {
 	"main": "dist/_worker.js/index.js",
-	"name": "astro-nano",
+	"name": "blog",
   "compatibility_date": "2025-12-25",
   "compatibility_flags": [
     "nodejs_compat",
