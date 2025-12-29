@@ -30,44 +30,81 @@ const work = await Promise.all(
 
 ---
 
+
 <PageLayout title={HOME.TITLE} description={HOME.DESCRIPTION}>
+  <h1 style="text-align:center;padding-bottom:20px;font-size:large">刘泽正 </h1>
   <Container>
-    <h4 class="animate font-semibold text-black dark:text-white">
-      Hi, I'm Nano <span class="text-xl">👋🏻</span> 
-    </h4>
-    <div class="space-y-16">
+    
+    <div class="space-y-10">
       <section>
+        <p class="animate text-sm opacity-75">
+          人工智能软件工程师/应用软件工程师
+        </p>
+        <p class="animate text-sm opacity-75">
+          东方空间科技有限公司 软件事业部
+        </p>
+        <p class="animate text-sm opacity-75">
+          北京市大兴区亦庄经济技术开发区荣华中路数码庄园B座2楼
+        </p>
+      </section>
+
+      <section>
+        <h4 class="animate font-semibold text-black dark:text-white text-2xl mb-4">
+          <span class="text-xl">👋</span> About me
+        </h4>
         <article class="space-y-4">
           <p class="animate">
-            I am a minimal, seo friendly, accessible portfolio and blog for developers. 
-            I am an even more lightweight version of my popular theme
-            <Link href="https://github.com/markhorn-dev/astro-sphere" aria-label="Astro Sphere on Github" external>
-              Astro Sphere
-            </Link>.
-            I have a lighthouse scores of 100 across the board for performance, 
-            accesibility, best practices and SEO.
+            我目前在东方空间担任人工智能软件工程师/应用软件工程师。
+            在此之前，我是大连理工大学软件工程专业的硕士研究生(2022-2025)，师从
+            <Link href="https://faculty.dlut.edu.cn/guqi/" external>贾棋</Link>
+            教授，期间在DUT Media实验室工作。在攻读硕士学位之前, 我在大连交通大学获得了机械工程和软件工程的学士学位(2017-2022)。
           </p>
           <p class="animate">
-            I come packed with full type safety, a sitemap, an rss feed, markdown 
-            and mdx support (use components in your markdown) through astro integrations.
-            I am styled with tailwind and come preconfigured with light, dark and 
-            system/os theme preferences out of the box.
+            我当前的工作涉及到计算机视觉模型的边缘部署与加速，AI Landing，与火箭地面软件开发。
+            我深深热衷于分享自己的经验与技术，您可以点击右上角的project或blog查看我过往的工作。
+            如果我的工作与您产生共鸣，或者您有兴趣探索合作的可能性，欢迎随时与我联系交流。
           </p>
-          <p class="animate">
-            Visit
-            <Link href="https://github.com/markhorn-dev/astro-nano" aria-label="Astro Nano on Github" external>
-              Astro Nano on Github
-            </Link>
-            to fork the repository, read the docs or one-click deploy on Vercel or Netlify. 
-          </p>
+          <ul class="animate space-y-2">
+            <li>
+              <Link href="https://segmentfault.com/u/zengshenaiguodejinyu/articles" aria-label="SegmentFault" external>
+                📚 SegmentFault
+              </Link>
+            </li>
+            <li>
+              <Link href="https://github.com/riseflame" aria-label="GitHub" external>
+                💼 GitHub
+              </Link>
+            </li>
+            <li>
+              <Link href="mailto:dongbeibubai@163.com" aria-label="Email">
+                ✉️ dongbeibubai@163.com
+              </Link>
+            </li>
+          </ul>
         </article>
+      </section>
+
+      <section>
+        <h4 class="animate font-semibold text-black dark:text-white text-2xl mb-4">
+          🔥 News
+        </h4>
+        <ul class="animate space-y-3">
+          <li class="text-sm">
+            <span class="opacity-75">Apr. 2025:</span> 
+            <span class="ml-2">🎉 一篇论文被Signal Processing接收。</span>
+          </li>
+          <li class="text-sm">
+            <span class="opacity-75">Apr. 2024:</span> 
+            <span class="ml-2">🎉 一篇论文被 ACM MM 接收（共同作者），感谢龙晗。</span>
+          </li>
+        </ul>
       </section>
 
       <section class="animate space-y-6">
         <div class="flex flex-wrap gap-y-2 items-center justify-between">
-          <h5 class="font-semibold text-black dark:text-white">
-            Latest posts
-          </h5>
+          <h4 class="font-semibold text-black dark:text-white text-2xl">
+            📝 Latest posts
+          </h4>
           <Link href="/blog">
             See all posts
           </Link>
@@ -83,9 +120,9 @@ const work = await Promise.all(
 
       <section class="animate space-y-6">
         <div class="flex flex-wrap gap-y-2 items-center justify-between">
-          <h5 class="font-semibold text-black dark:text-white">
-            Work Experience
-          </h5>
+          <h4 class="font-semibold text-black dark:text-white text-2xl">
+            💼 Work Experience
+          </h4>
           <Link href="/work">
             See all work
           </Link>
@@ -112,9 +149,9 @@ const work = await Promise.all(
 
       <section class="animate space-y-6">
         <div class="flex flex-wrap gap-y-2 items-center justify-between">
-          <h5 class="font-semibold text-black dark:text-white">
-            Recent projects
-          </h5>
+          <h4 class="font-semibold text-black dark:text-white text-2xl">
+            🚀 Recent projects
+          </h4>
           <Link href="/projects">
             See all projects
           </Link>
@@ -125,33 +162,6 @@ const work = await Promise.all(
               <ArrowCard entry={project} />
             </li>
           ))}
-        </ul>
-      </section>
-
-      <section class="animate space-y-4">
-        <h5 class="font-semibold text-black dark:text-white">
-          Let's Connect
-        </h5>
-        <article>
-          <p>
-            If you want to get in touch with me about something or just to say hi,
-            reach out on social media or send me an email.
-          </p>
-        </article>
-        <ul class="flex flex-wrap gap-2">
-          {SOCIALS.map(SOCIAL => (
-            <li class="flex gap-x-2 text-nowrap">
-              <Link href={SOCIAL.HREF} external aria-label={`${SITE.NAME} on ${SOCIAL.NAME}`}>
-                {SOCIAL.NAME}
-              </Link>
-              {"/"}
-            </li>
-          ))}
-          <li class="line-clamp-1">
-            <Link href={`mailto:${SITE.EMAIL}`} aria-label={`Email ${SITE.NAME}`}>
-              {SITE.EMAIL}
-            </Link>
-          </li>
         </ul>
       </section>
     </div>
