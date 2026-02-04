@@ -35,6 +35,8 @@
     "typescript": "^5.4.2"
   },
   "devDependencies": {
+    "rehype-katex": "^7.0.1",
+    "remark-math": "^6.0.0",
     "wrangler": "^4.54.0"
   }
 }
