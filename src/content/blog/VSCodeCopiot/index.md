@@ -1,11 +1,9 @@
 ---
 title: "VSCode Copilot 备忘录"
 description: "性价比真高啊"
-date: "17/3/2026"
+date: "Mar 03 2026"
 draft: false
 ---
-
-<center>此文章未经过AI编写和润色，请放心阅读。</center>
 
 Github Copilot是微软公司推出的一款编程助手，可以自动完成代码编写、创建文件、执行命令等功能，相较于Cursor、ClaudeCode、CodeX、Trae等类似的产品Copilot具有以下几点优势：
 
