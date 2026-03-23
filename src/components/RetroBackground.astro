@@ -1,7 +1,7 @@
 ---
 ---
 
-<div class="fixed top-0 -left-4 h-full w-44 opacity-10 pointer-events-none -z-10 select-none overflow-hidden md:left-0 md:w-72 md:opacity-100" aria-hidden="true">
+<div id="retro-rainbow" class="absolute top-0 bottom-0 left-0 hidden w-72 pointer-events-none -z-10 select-none overflow-hidden md:block" aria-hidden="true">
   <svg class="h-full w-full" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" viewBox="0 0 160 100">
     <defs>
       <filter id="rainbow-glow" x="-50%" y="-50%" width="200%" height="200%">
@@ -11,48 +11,79 @@
           <feMergeNode in="SourceGraphic" />
         </feMerge>
       </filter>
-
-      <linearGradient id="cyan-g" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0%" stop-color="#d7ffff" />
-        <stop offset="100%" stop-color="#80ecff" />
-      </linearGradient>
-      <linearGradient id="green-g" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0%" stop-color="#7affb3" />
-        <stop offset="100%" stop-color="#41e672" />
-      </linearGradient>
-      <linearGradient id="yellow-g" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0%" stop-color="#fff58e" />
-        <stop offset="100%" stop-color="#ffd93a" />
-      </linearGradient>
-      <linearGradient id="orange-g" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0%" stop-color="#ffc466" />
-        <stop offset="100%" stop-color="#ff8c2a" />
-      </linearGradient>
-      <linearGradient id="red-g" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0%" stop-color="#ff6565" />
-        <stop offset="100%" stop-color="#ff2a2a" />
-      </linearGradient>
     </defs>
 
     <!-- Soft outer aura to mimic promo-art bloom -->
     <g stroke-linecap="round" fill="none" opacity="0.18" filter="url(#rainbow-glow)">
-      <path d="M 110 100 L 100 14 Q 98 4 90 -8" stroke="url(#cyan-g)" stroke-width="16" />
-      <line x1="4" y1="-8" x2="46" y2="100" stroke="url(#green-g)" stroke-width="18" />
-      <line x1="20" y1="-8" x2="62" y2="100" stroke="url(#yellow-g)" stroke-width="18" />
-      <line x1="36" y1="-8" x2="78" y2="100" stroke="url(#orange-g)" stroke-width="18" />
-      <line x1="52" y1="-8" x2="94" y2="100" stroke="url(#red-g)" stroke-width="18" />
+      <path id="aura-cyan" d="M 110 100 L 100 14 Q 102 4 114 -8" stroke="#80ecff" stroke-width="16" />
+      <line id="aura-green" x1="4" y1="-8" x2="46" y2="100" stroke="#41e672" stroke-width="18" />
+      <line id="aura-yellow" x1="20" y1="-8" x2="62" y2="100" stroke="#ffd93a" stroke-width="18" />
+      <line id="aura-orange" x1="36" y1="-8" x2="78" y2="100" stroke="#ff8c2a" stroke-width="18" />
+      <line id="aura-red" x1="52" y1="-8" x2="94" y2="100" stroke="#ff2a2a" stroke-width="18" />
     </g>
 
     <!-- Main rainbow strokes (cyan -> green -> yellow -> orange -> red) -->
     <g stroke-linecap="round" fill="none" filter="url(#rainbow-glow)">
-      <path d="M 110 100 L 100 14 Q 98 4 90 -8" stroke="url(#cyan-g)" stroke-width="9" />
-      <line x1="4" y1="-8" x2="46" y2="100" stroke="url(#green-g)" stroke-width="10" />
-      <line x1="20" y1="-8" x2="62" y2="100" stroke="url(#yellow-g)" stroke-width="10" />
-      <line x1="36" y1="-8" x2="78" y2="100" stroke="url(#orange-g)" stroke-width="10" />
-      <line x1="52" y1="-8" x2="94" y2="100" stroke="url(#red-g)" stroke-width="10" />
+      <path id="main-cyan" d="M 110 100 L 100 14 Q 102 4 114 -8" stroke="#80ecff" stroke-width="9" />
+      <line id="main-green" x1="4" y1="-8" x2="46" y2="100" stroke="#41e672" stroke-width="10" />
+      <line id="main-yellow" x1="20" y1="-8" x2="62" y2="100" stroke="#ffd93a" stroke-width="10" />
+      <line id="main-orange" x1="36" y1="-8" x2="78" y2="100" stroke="#ff8c2a" stroke-width="10" />
+      <line id="main-red" x1="52" y1="-8" x2="94" y2="100" stroke="#ff2a2a" stroke-width="10" />
     </g>
   </svg>
 </div>
 
-<style>
-</style>
+<script>
+  const applyRainbowBottomShift = () => {
+    const viewportHeight = window.innerHeight || 1;
+    const pageHeight = Math.max(
+      document.documentElement.scrollHeight,
+      document.body?.scrollHeight ?? 0,
+      viewportHeight,
+    );
+
+    const extraScreens = Math.max(0, pageHeight / viewportHeight - 1);
+    const shift = Math.min(48, Math.round(extraScreens * 8));
+
+    const setBottomX = (id: string, baseX: number) => {
+      const line = document.getElementById(id);
+      if (!line) return;
+      line.setAttribute("x2", String(baseX + shift));
+    };
+
+    setBottomX("aura-green", 46);
+    setBottomX("aura-yellow", 62);
+    setBottomX("aura-orange", 78);
+    setBottomX("aura-red", 94);
+    setBottomX("main-green", 46);
+    setBottomX("main-yellow", 62);
+    setBottomX("main-orange", 78);
+    setBottomX("main-red", 94);
+
+    const cyanPath = `M ${110 + shift} 100 L 100 14 Q 102 4 114 -8`;
+    const auraCyan = document.getElementById("aura-cyan");
+    const mainCyan = document.getElementById("main-cyan");
+    auraCyan?.setAttribute("d", cyanPath);
+    mainCyan?.setAttribute("d", cyanPath);
+  };
+
+  const setupRainbowShift = () => {
+    applyRainbowBottomShift();
+
+    if (document.documentElement.dataset.rainbowShiftBound === "true") return;
+    document.documentElement.dataset.rainbowShiftBound = "true";
+
+    window.addEventListener("resize", applyRainbowBottomShift, { passive: true });
+    window.addEventListener("load", applyRainbowBottomShift, { passive: true });
+    document.addEventListener("astro:after-swap", applyRainbowBottomShift);
+
+    if ("ResizeObserver" in window && document.body) {
+      const observer = new ResizeObserver(() => applyRainbowBottomShift());
+      observer.observe(document.body);
+    }
+  };
+
+  document.addEventListener("DOMContentLoaded", setupRainbowShift);
+  document.addEventListener("astro:after-swap", setupRainbowShift);
+  setupRainbowShift();
+</script>

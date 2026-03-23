@@ -8,7 +8,20 @@ import { SITE } from "@consts";
   <Container>
     <div class="flex flex-wrap gap-y-2 justify-between">
       <Link href="/" underline={false}>
-        <div class="font-semibold">
+        <div class="flex items-center gap-2 font-semibold">
+          <svg
+            class="h-4 w-5"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 28 18"
+            aria-hidden="true"
+          >
+            <g fill="none" stroke-linecap="round">
+              <line x1="2" y1="16" x2="7" y2="2" stroke="#80ecff" stroke-width="2.6" />
+              <line x1="8" y1="16" x2="13" y2="2" stroke="#41e672" stroke-width="2.6" />
+              <line x1="14" y1="16" x2="19" y2="2" stroke="#ffd93a" stroke-width="2.6" />
+              <line x1="20" y1="16" x2="25" y2="2" stroke="#ff8c2a" stroke-width="2.6" />
+            </g>
+          </svg>
           {SITE.NAME}
         </div>
       </Link>
