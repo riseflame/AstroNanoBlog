@@ -1,0 +1,58 @@
+---
+---
+
+<div class="fixed top-0 left-0 h-full w-72 pointer-events-none -z-10 select-none overflow-hidden" aria-hidden="true">
+  <svg class="h-full w-full" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" viewBox="0 0 160 100">
+    <defs>
+      <filter id="rainbow-glow" x="-50%" y="-50%" width="200%" height="200%">
+        <feGaussianBlur stdDeviation="2.2" result="blur" />
+        <feMerge>
+          <feMergeNode in="blur" />
+          <feMergeNode in="SourceGraphic" />
+        </feMerge>
+      </filter>
+
+      <linearGradient id="cyan-g" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#d7ffff" />
+        <stop offset="100%" stop-color="#80ecff" />
+      </linearGradient>
+      <linearGradient id="green-g" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#7affb3" />
+        <stop offset="100%" stop-color="#41e672" />
+      </linearGradient>
+      <linearGradient id="yellow-g" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#fff58e" />
+        <stop offset="100%" stop-color="#ffd93a" />
+      </linearGradient>
+      <linearGradient id="orange-g" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#ffc466" />
+        <stop offset="100%" stop-color="#ff8c2a" />
+      </linearGradient>
+      <linearGradient id="red-g" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#ff6565" />
+        <stop offset="100%" stop-color="#ff2a2a" />
+      </linearGradient>
+    </defs>
+
+    <!-- Soft outer aura to mimic promo-art bloom -->
+    <g stroke-linecap="round" fill="none" opacity="0.18" filter="url(#rainbow-glow)">
+      <path d="M 110 100 L 100 14 Q 98 4 90 -8" stroke="url(#cyan-g)" stroke-width="16" />
+      <line x1="4" y1="-8" x2="46" y2="100" stroke="url(#green-g)" stroke-width="18" />
+      <line x1="20" y1="-8" x2="62" y2="100" stroke="url(#yellow-g)" stroke-width="18" />
+      <line x1="36" y1="-8" x2="78" y2="100" stroke="url(#orange-g)" stroke-width="18" />
+      <line x1="52" y1="-8" x2="94" y2="100" stroke="url(#red-g)" stroke-width="18" />
+    </g>
+
+    <!-- Main rainbow strokes (cyan -> green -> yellow -> orange -> red) -->
+    <g stroke-linecap="round" fill="none" filter="url(#rainbow-glow)">
+      <path d="M 110 100 L 100 14 Q 98 4 90 -8" stroke="url(#cyan-g)" stroke-width="9" />
+      <line x1="4" y1="-8" x2="46" y2="100" stroke="url(#green-g)" stroke-width="10" />
+      <line x1="20" y1="-8" x2="62" y2="100" stroke="url(#yellow-g)" stroke-width="10" />
+      <line x1="36" y1="-8" x2="78" y2="100" stroke="url(#orange-g)" stroke-width="10" />
+      <line x1="52" y1="-8" x2="94" y2="100" stroke="url(#red-g)" stroke-width="10" />
+    </g>
+  </svg>
+</div>
+
+<style>
+</style>
