@@ -3,6 +3,79 @@ title: "协作机械臂表面检视"
 description: "🚧基于Elite CS63机械臂的自动化表面检视项目"
 date: "05/09/2026"
 ---
+# 机械臂描述文件编写
+艾利特的ROS2包中并不是单独的URDF描述文件，而是通过XACRO文件生成URDF描述文件的，XACRO文件中包含了机械臂的结构信息、关节限制、传感器信息等内容。对于该项目应该将连接件和摄像头加入到urdf的描述中，同时更新机械臂的碰撞检测信息。
+
+## URDF(Unified Robot Description Format)
+
+
+
+cs.urdf.xacro 作为入口文件，经过 xacro 命令展开后，生成最终的 URDF 字符串给 robot_state_publisher / MoveIt 使用。
+
+cs_macro.xacro是urdf的下一层，会读取mesh中的模型文件和yaml里面的配置参数。
+具体调用结构如下：
+```
+launch.py
+  -> xacro cs.urdf.xacro
+      -> include cs_macro.xacro
+          -> include inc/cs_common.xacro
+          -> include inc/cs_transmissions.xacro
+          -> include cs.ros2_control.xacro
+      -> 读取 config/cs63/*.yaml
+      -> 读取 meshes/cs63/*
+      -> 生成最终 URDF
+```
+增加连接件和摄像头需要在macro这一层加入新的link和joint，link代表机械臂的一个刚体部件，joint则是代表两个link间的关系。
+对于我们新加入的连接件和摄像头，都需要定义一个link来描述它们的几何形状和物理属性，同时需要定义joint将连接件连接到机械臂末端，以及将摄像头连接到连接件上。具体代码如下：
+
+```
+<!-- Custom connector mounted after the default tool frame. -->
+    <link name="${tf_prefix}connector_link">
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="package://eli_cs_robot_description/meshes/cs63/custom/connector.stl" scale="0.001 0.001 0.001"/>
+        </geometry>
+        <material name="connector_gray">
+          <color rgba="0.45 0.45 0.45 1.0"/>
+        </material>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="package://eli_cs_robot_description/meshes/cs63/custom/connector.stl" scale="0.001 0.001 0.001"/>
+        </geometry>
+      </collision>
+    </link>
+
+    <joint name="${tf_prefix}tool0-connector" type="fixed">
+      <origin xyz="0 0 0" rpy="1.5708 0  0 "/>
+      <parent link="${tf_prefix}tool0"/>
+      <child link="${tf_prefix}connector_link"/>
+    </joint>
+```
+导入进来后，有两个变换关系：joint 中的 <origin> 定义了子 link（connector_link）坐标系相对于父 link（tool0）坐标系的变换；link 中 visual/collision 里的 <origin> 定义了几何体在该 link 自身坐标系下的偏移。 对于连接件的安装具体位置，通过修改joint的origin来调节。摄像头同理，最终效果如下图所示：
+![image.png](https://img.zzliu.com/file/1778636294531_image.png)
+
+
+
+## SRDF(Semantic Robot Description Format)
+
+防止机器人自身链接之间的碰撞检测把我们新加入的部件一直认为碰撞，需要在eli_cs_robot_moveit_config/srdf/cs_macro.srdf.xacroSRDF 中禁用相邻部件对连接件和摄像头的检测，具体代码如下所示：
+
+```
+<disable_collisions link1="${prefix}wrist_3_link" link2="${prefix}connector_link" reason="Adjacent" />
+<disable_collisions link1="${prefix}connector_link" link2="${prefix}camera_link" reason="Adjacent" />
+```
+
+还需要将Moveit的规划末端位置改成我们新设置的摄像头的TCP位置，具体代码如下所示：
+
+```
+<group name="${prefix}${name}_manipulator">
+      <chain base_link="${prefix}base_link" tip_link="${prefix}camera_tcp" />
+</group>
+```
+
 
 # 机械臂相关设置
 为了防止机械臂移动时末端碰撞到安装平面，需设置安全平面来限制机械臂的行动，艾利特的机械臂安全设置是独立于操控模式的，即使在远程操控模式下依然生效，相当于给我规划的点位增加了一层保险，同时安全平面的各个点位都是机械臂硬件测量出来的，比在MoveIt中设定的碰撞检测更加准确。
