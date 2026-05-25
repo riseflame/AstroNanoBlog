@@ -3,6 +3,61 @@ title: "协作机械臂表面检视"
 description: "🚧基于Elite CS63机械臂的自动化表面检视项目"
 date: "05/09/2026"
 ---
+
+# Rviz仿真场景搭建
+## 机械臂部件定义
+如图所示，机械臂基座上负责控制整体旋转的关节为base，接下来按照人类手臂命名，第一个可动关节是肩部，第二个是肘部，接下来是腕部1，腕部2.... 以及最终的工具法兰。
+![image.png](https://img.zzliu.com/file/1778662521240_image.png)
+我们使用的CS63各个部件的定义如下图所示：
+![image.png](https://img.zzliu.com/file/1779343511500_image.png)
+## 底座建模
+我们需要在规划时加入桌面的模型，防止机械臂规划一条会和桌面发生碰撞的路径，底座上有四个把手，为了防止机械臂会撞到把手，我将安全平面和规划的底座都拉高了1CM，这样会导致机械臂的基座与肘部有一些穿模，还需要在碰撞检测中把这两部分和底座的碰撞屏蔽掉。
+首先是在rviz里面显示底座：在 model_visualizer.py里，_publish_table() 会发布一个 visualization_msgs/Marker：
+
+``` python
+m.type = Marker.CUBE
+m.header.frame_id = 'base_link'
+m.scale.x = table_size_x
+m.scale.y = table_size_y
+m.scale.z = table_thickness
+m.pose.position.z = table_surface_z - table_thickness * 0.5
+```
+这个 marker 发布到：/table_marker 然后 minimal.rviz 里添加了一个 Marker 显示项，订阅 /table_marker，所以 RViz 能看到红色桌面。
+![image.png](https://img.zzliu.com/file/1778663532114_image.png)
+
+然后是Movit的碰撞检测：在inspection_planner.py里，_publish_collision_scene() 会持续向 /planning_scene 发布 PlanningScene。
+
+桌面碰撞物体在 _make_table_collision_object() 里创建：
+
+``` python
+table = CollisionObject()
+table.header.frame_id = 'base_link'
+table.id = 'inspection_table'
+
+table_box = SolidPrimitive()
+table_box.type = SolidPrimitive.BOX
+table_box.dimensions = [table_size_x, table_size_y, table_thickness]
+```
+
+它的位置和 RViz 桌面一致：
+
+``` python
+table_pose.position.x = table_center_x
+table_pose.position.y = table_center_y
+table_pose.position.z = table_surface_z - table_thickness * 0.5
+```
+
+这样 MoveIt 规划时就知道桌面存在，会避免轨迹穿过桌面。
+桌面直接在基座附近，会和机械臂底座模型重叠。为避免起始状态报碰撞，我没有切开桌子，而是设置 Allowed Collision Matrix。
+在 params.yaml 里允许这些 link 和桌面碰撞：
+``` yaml
+table_allowed_collision_links: ["base_link", "base_link_inertia", "shoulder_link"]
+```
+代码里会先调用 /get_planning_scene 读取 MoveIt 当前 ACM，再追加：
+- inspection_table \<-> base_link
+- inspection_table \<-> base_link_inertia
+- inspection_table \<-> shoulder_link
+
 # 机械臂描述文件编写
 艾利特的ROS2包中并不是单独的URDF描述文件，而是通过XACRO文件生成URDF描述文件的，XACRO文件中包含了机械臂的结构信息、关节限制、传感器信息等内容。对于该项目应该将连接件和摄像头加入到urdf的描述中，同时更新机械臂的碰撞检测信息。
 
