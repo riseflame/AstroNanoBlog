@@ -1,76 +1,29 @@
 ---
-title: "Astro Sphere"
-description: "Portfolio and blog build with astro."
-date: "Mar 18 2024"
-demoURL: "https://astro-sphere-demo.vercel.app"
+title: "GPT拼车指南"
+description: "各个软件如何使用第三方API的指南"
+date: "May 28 2026"
+demoURL: "api.zzliu.com"
 repoURL: "https://github.com/markhorn-dev/astro-sphere"
 ---
 
-![Astro Sphere Lighthouse Score](/astro-sphere.jpg)
 
-Astro Sphere is a static, minimalist, lightweight, lightning fast portfolio and blog theme based on my personal website.
 
-It is primarily Astro, Tailwind and Typescript, with a very small amount of SolidJS for stateful components.
 
-## 🚀 Deploy your own
+## 📋 接入Copilot
+首先安装Unify Chat Provider插件，如图所示：
 
-<div class="flex gap-2">
-  <a target="_blank" aria-label="Deploy with Vercel" href="https://vercel.com/new/clone?repository-url=https://github.com/markhorn-dev/astro-sphere">
-    <img src="/deploy_vercel.svg" />
-  </a>
-  <a target="_blank" aria-label="Deploy with Netlify" href="https://app.netlify.com/start/deploy?repository=https://github.com/markhorn-dev/astro-sphere">
-    <img src="/deploy_netlify.svg" />
-  </a>
-</div>
+![image.png](https://img.zzliu.com/file/1779948179303_image.png)
 
-## 📋 Features
+插件安装好后使用Ctrl+Shift+P打开命令面板，输入Unify Chat Provider: Import Config，输入如下的供应商配置：
 
-- ✅ 100/100 Lighthouse performance
-- ✅ Responsive
-- ✅ Accessible
-- ✅ SEO-friendly
-- ✅ Typesafe
-- ✅ Minimal style
-- ✅ Light/Dark Theme
-- ✅ Animated UI
-- ✅ Tailwind styling
-- ✅ Auto generated sitemap
-- ✅ Auto generated RSS Feed
-- ✅ Markdown support
-- ✅ MDX Support (components in your markdown)
-- ✅ Searchable content (posts and projects)
+```
+W3sidHlwZSI6Im9wZW5haS1yZXNwb25zZXMiLCJuYW1lIjoiT3BlbkFJIiwiYmFzZVVybCI6Imh0dHA6Ly9ncHQuenpsaXUuY29tIiwibW9kZWxzIjpbeyJpZCI6ImdwdC01LjUiLCJuYW1lIjoiR1BULTUuNSIsIm1heElucHV0VG9rZW5zIjoxMjgwMDAsIm1heE91dHB1dFRva2VucyI6MTI4MDAwLCJ0b2tlbml6ZXIiOiJvcGVuYWkiLCJjYXBhYmlsaXRpZXMiOnsidG9vbENhbGxpbmciOnRydWUsImltYWdlSW5wdXQiOnRydWUsImVkaXRUb29scyI6ImFwcGx5LXBhdGNoIn0sInN0cmVhbSI6dHJ1ZSwidGhpbmtpbmciOnsidHlwZSI6ImVuYWJsZWQiLCJlZmZvcnQiOiJ4aGlnaCJ9LCJwcmVzZXRUZW1wbGF0ZXMiOlt7ImlkIjoicmVhc29uaW5nRWZmb3J0IiwibmFtZSI6IuaOqOeQhuW8uuW6piIsInByZXNldHMiOlt7ImlkIjoieGhpZ2giLCJuYW1lIjoi6LaF6auYIiwiZGVzY3JpcHRpb24iOiLotoXpq5jmjqjnkIbmt7HluqYiLCJjb25maWciOnsidGhpbmtpbmciOnsidHlwZSI6ImVuYWJsZWQiLCJlZmZvcnQiOiJ4aGlnaCJ9fX0seyJpZCI6ImhpZ2giLCJuYW1lIjoi6auYIiwiZGVzY3JpcHRpb24iOiLpq5jmjqjnkIbmt7HluqYiLCJjb25maWciOnsidGhpbmtpbmciOnsidHlwZSI6ImVuYWJsZWQiLCJlZmZvcnQiOiJoaWdoIn19fSx7ImlkIjoibWVkaXVtIiwibmFtZSI6IuS4rSIsImRlc2NyaXB0aW9uIjoi5Zyo5oCd6ICD5rex5bqm5LiO6YCf5bqm5LmL6Ze05Y-W5b6X5bmz6KGhIiwiY29uZmlnIjp7InRoaW5raW5nIjp7InR5cGUiOiJlbmFibGVkIiwiZWZmb3J0IjoibWVkaXVtIn19fSx7ImlkIjoibG93IiwibmFtZSI6IuS9jiIsImRlc2NyaXB0aW9uIjoi5pu05b-r55qE5ZON5bqU6YCf5bqm5ZKM5pu05L2O55qE5o6o55CG5rex5bqmIiwiY29uZmlnIjp7InRoaW5raW5nIjp7InR5cGUiOiJlbmFibGVkIiwiZWZmb3J0IjoibG93In19fSx7ImlkIjoibm9uZSIsIm5hbWUiOiLml6AiLCJkZXNjcmlwdGlvbiI6IuS4jee7j-aOqOeQhuebtOaOpeWTjeW6lCIsImNvbmZpZyI6eyJ0aGlua2luZyI6eyJ0eXBlIjoiZW5hYmxlZCIsImVmZm9ydCI6Im5vbmUifX19XSwiZGVmYXVsdCI6InhoaWdoIn1dfV0sImF1dGgiOnsibWV0aG9kIjoiYXBpLWtleSIsImxhYmVsIjoiQVBJIEtleSIsImRlc2NyaXB0aW9uIjoi5L2_55SoIEFQSSBLZXkg6L-b6KGM6Lqr5Lu96aqM6K-BIn0sImF1dG9GZXRjaE9mZmljaWFsTW9kZWxzIjpmYWxzZX1d
+```
 
-## 💯 Lighthouse score
-![Astro Sphere Lighthouse Score](/lighthouse.png)
-
-## 🕊️ Lightweight
-All pages under 100kb (including fonts)
-
-## ⚡︎ Fast
-Rendered in ~40ms on localhost
-
-## 📄 Configuration
-
-The blog posts on the demo serve as the documentation and configuration.
-
-## 💻 Commands
-
-All commands are run from the root of the project, from a terminal:
-
-Replace npm with your package manager of choice. `npm`, `pnpm`, `yarn`, `bun`, etc
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run sync`            | Generates TypeScript types for all Astro modules.|
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
-| `npm run lint`            | Run ESLint                                       |
-| `npm run lint:fix`        | Auto-fix ESLint issues                           |
-
-## 🏛️ License
-
-MIT
+添加好后，再次输入CTRL+SHIFT+P，输入Unify Chat Provider: Manage Provider，选择OpenAI：
+![image.png](https://img.zzliu.com/file/1779948390923_image.png)
+接着在配置供应商中选择身份验证，输入自己KEY，保存一下就可以使用了：
+![image.png](https://img.zzliu.com/file/1779948489996_image.png)
+配置好后可以在copilot的chat窗口中选择GPT-5.5模型了：
+![image.png](https://img.zzliu.com/file/1779948543727_image.png)
+如果需要使用其他模型可以在供应商窗口中获取官方模型列表，然后自己配置，需要修改一下上下文窗口大小，因为拉取到的是官方版本的上下文，和我们用订阅账号反代出来的上下文窗口大小不一致。这个GPT-5.5是我修改好的，直接使用就可以了。
