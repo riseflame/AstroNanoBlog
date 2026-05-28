@@ -1,7 +1,7 @@
 ---
 ---
 
-<div id="retro-rainbow" class="absolute top-0 bottom-0 left-0 hidden w-72 pointer-events-none -z-10 select-none overflow-hidden md:block" aria-hidden="true">
+<div id="retro-rainbow" class="absolute top-0 bottom-0 left-0 pointer-events-none -z-10 select-none overflow-hidden" aria-hidden="true">
   <svg class="h-full w-full" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" viewBox="0 0 160 100">
     <defs>
       <filter id="rainbow-glow" x="-50%" y="-50%" width="200%" height="200%">
@@ -33,9 +33,35 @@
   </svg>
 </div>
 
+<style>
+  #retro-rainbow {
+    width: clamp(2rem, 10vw, 4rem);
+    opacity: 0.5;
+    transform: translateX(-45%);
+  }
+
+  @media (min-width: 768px) {
+    #retro-rainbow {
+      width: clamp(4rem, calc((100vw - 40rem) / 2), 18rem);
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @media (min-width: 768px) and (max-width: 860px) {
+    #retro-rainbow {
+      opacity: 0.72;
+    }
+  }
+</style>
+
 <script>
   const applyRainbowBottomShift = () => {
+    const rainbow = document.getElementById("retro-rainbow");
+    if (!rainbow) return;
+
     const viewportHeight = window.innerHeight || 1;
+    const rainbowWidth = rainbow.getBoundingClientRect().width;
     const pageHeight = Math.max(
       document.documentElement.scrollHeight,
       document.body?.scrollHeight ?? 0,
@@ -43,7 +69,8 @@
     );
 
     const extraScreens = Math.max(0, pageHeight / viewportHeight - 1);
-    const shift = Math.min(48, Math.round(extraScreens * 8));
+    const widthShiftLimit = Math.max(0, Math.round((rainbowWidth - 64) / 6));
+    const shift = Math.min(48, widthShiftLimit, Math.round(extraScreens * 8));
 
     const setBottomX = (id: string, baseX: number) => {
       const line = document.getElementById(id);
