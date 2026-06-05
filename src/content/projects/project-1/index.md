@@ -54,11 +54,12 @@ eyJ0eXBlIjoib3BlbmFpLXJlc3BvbnNlcyIsIm5hbWUiOiJPcGVuQUkiLCJiYXNlVXJsIjoiaHR0cDov
 配置好后可以在copilot的chat窗口中选择GPT-5.5模型了：
 ![image.png](https://img.zzliu.com/file/1780628929096_image.png)
 如果需要使用其他模型可以在供应商窗口中获取官方模型列表，然后自己配置，需要修改一下上下文窗口大小，因为拉取到的是官方API版本的上下文，和我们用订阅账号反代出来的上下文窗口大小不一致。这个GPT-5.5是我修改好的，直接使用就可以了，后续如果反代出来pro模型，我会再更新一下这个配置的。
-还有一个需要改动的地方是Copilot的subagent，默认是调用官方的免费模型，性能很差，我们需要用prompt的方式来让他调用我们的模型，这里我推荐全局自定义Agent的方案，修改一次之后再这台电脑上的vscode都生效，如下图所示，使用时调用自定义的agent即可：
+
+还有一个需要改动的地方是Copilot的subagent，默认是调用官方的免费模型，性能很差，我们需要用prompt的方式来让他调用我们的模型，这里我推荐全局自定义Agent的方案，修改一次之后在这台电脑上的vscode都生效，如下图所示，使用时调用自定义的agent即可：
 ![image.png](https://img.zzliu.com/file/1780629167665_image.png)
 我本地的提示词地址是,不同人可能不一样，直接让ai去给你配一下
 ```
-C:\Users\Administrator\AppData\Roaming\Code\User\prompts\EnglishTeacher.agent.md
+C:\Users\Administrator\AppData\Roaming\Code\User\prompts\
 ```
 
 主要是在全局提示词中加入：
