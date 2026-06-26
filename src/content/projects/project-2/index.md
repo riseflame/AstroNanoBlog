@@ -1,79 +1,50 @@
 ---
-title: "Astro Nano"
-description: "Minimal portfolio and blog build with astro and no frameworks."
-date: "Mar 26 2024"
-demoURL: "https://astro-nano-demo.vercel.app"
-repoURL: "https://github.com/markhorn-dev/astro-nano"
+title: "小型太空机械臂-图像检测算法"
+description: "检测一个小球的3D坐标"
+date: "Jun 26 2026"
 ---
 
-![Astro Nano](/astro-nano.png)
+# 一.目标
+采用眼在手上的架构，检测一个10cm直径的小球，输出球心在机械臂基座坐标系下的坐标。
 
-Astro Nano is a static, minimalist, lightweight, lightning fast portfolio and blog theme.
+# 二.方案设计
 
-Built with Astro, Tailwind and Typescript, an no frameworks.
+## 2.1 算法设计
+由于球的三维切线轮廓本身是一个空间圆，当它被透视投到固定平面上以后，偏离画面中心时就会成为椭圆，如下图所示：
 
-It was designed as an even more minimal theme than my popular theme [Astro Sphere](https://github.com/markhorn-dev/astro-sphere)
+![image.png](https://img.zzliu.com/file/1782202013657_image.png)
 
-## 🚀 Deploy your own
+此时球的投影椭圆圆心不再和球心重合，因此求解球心还需要结合半径和相机内参做透视变换，或者通过RGBD相机获取深度信息后拟合球心。
 
-<div class="flex gap-2">
-  <a target="_blank" aria-label="Deploy with Vercel" href="https://vercel.com/new/clone?repository-url=https://github.com/markhorn-dev/astro-nano">
-    <img src="/deploy_vercel.svg" />
-  </a>
-  <a target="_blank" aria-label="Deploy with Netlify" href="https://app.netlify.com/start/deploy?repository=https://github.com/markhorn-dev/astro-nano">
-    <img src="/deploy_netlify.svg" />
-  </a>
-</div>
+算法流程如下:
 
-## 📋 Features
+![image.png](https://img.zzliu.com/file/1782205141844_image.png)
 
-- ✅ 100/100 Lighthouse performance
-- ✅ Responsive
-- ✅ Accessible
-- ✅ SEO-friendly
-- ✅ Typesafe
-- ✅ Minimal style
-- ✅ Light/Dark Theme
-- ✅ Animated UI
-- ✅ Tailwind styling
-- ✅ Auto generated sitemap
-- ✅ Auto generated RSS Feed
-- ✅ Markdown support
-- ✅ MDX Support (components in your markdown)
+## 2.2 椭圆检测
 
-## 💯 Lighthouse score
-![Astro Nano Lighthouse Score](/lighthouse.png)
+考虑到检测目标单一，采用无需训练的传统几何算法更合适，对于椭圆检测可以使用多种opencv的椭圆检测方法，也可以使用基于颜色阈值的分割算法得到mask再拟合成椭圆。 具体选择那种算法，需要一套测试数据集来进行验证。
 
-## 🕊️ Lightweight
-No frameworks or added bulk
+### 2.2.1 数据集采集
+我将相机安装在机械臂末端，移动机械臂拍照，在三种不同的距离下更换角度，拍摄并标注了78张照片，由我人工标注，标注格式结果是椭圆参数，通过放大目标在边缘上点12个点的形式来拟合椭圆参数，拍摄过程中关闭自动曝光，自动白平衡。 每张照片保存了机械臂的关节角度，用于后续对不同姿态下的检测结果一致性做测试。
+数据集随机划分20%作为调参集，由大模型在调参集上对不同的传统算法进行调参，按照最高召回率的参数在测试集上进行测试。
 
-## ⚡︎ Fast
-Rendered in ~40ms on localhost
+### 2.2.2 算法选择
+选择了下述五种算法进行对比：
+| 编号 | 方法 | 原理/类型 | 说明 |
+| --- | --- | --- | --- |
+| M1 | OpenCV EdgeDrawing 椭圆检测 | 通用边缘法 | OpenCV 自带的 |
+| M2 | AAMED | 弧段邻接法 | 成熟、快速，对断裂轮廓较友好 |
+| M3 | EDSF | 弧段图与并查集法 | 较新的高性能通用椭圆检测器 |
+| M4 | CNED | 弧段+筛选的方法 | 我们组的算法😊已被纳入OpenCV | 
+| M5 | Lab 颜色概率分割 + 亚像素鲁棒椭圆拟合 | 基于颜色的方法 |  |
 
-## 📄 Configuration
+### 2.2.3 指标选择 
+Recall  按照IoU>0.9作为阈值 衡量目标的检出率
+Boundary IoU 作为主要的精度衡量指标 主要考虑的是后续管线中做深度预测需要依靠2D检测的mask提取深度信息。mask iou只计算边缘部分的iou，忽略内部的，可以更好更连边缘提取的准确性。
+D95(px) 衡量边缘的精度，计算检测边缘点到GT边缘点的距离的95%分位数。与目标面积无关。
+中心点误差   中心误差会比单独观察Boundary IoU更容易定位问题。
 
-The blog posts on the demo serve as the documentation and configuration.
+### 2.2.4 定量实验
 
-## 💻 Commands
-
-All commands are run from the root of the project, from a terminal:
-
-Replace npm with your package manager of choice. `npm`, `pnpm`, `yarn`, `bun`, etc
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run dev:network`     | Starts local dev server on local network         |
-| `npm run sync`            | Generates TypeScript types for all Astro modules.|
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run preview:network` | Preview build on local network                   |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
-| `npm run lint`            | Run ESLint                                       |
-| `npm run lint:fix`        | Auto-fix ESLint issues                           |
-
-## 🏛️ License
-
-MIT
+### 2.2.5 定性实验
+![image.png](https://img.zzliu.com/file/1782453211096_image.png)
