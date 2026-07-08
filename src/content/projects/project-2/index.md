@@ -45,6 +45,43 @@ D95(px) 衡量边缘的精度，计算检测边缘点到GT边缘点的距离的9
 中心点误差   中心误差会比单独观察Boundary IoU更容易定位问题。
 
 ### 2.2.4 定量实验
+| 方法 | 检出率↑ | R@0.80↑ | R@0.90↑ | R@0.95↑ | Median IoU↑ | B-IoU d2↑ | D95(px)↓ | 中心误差(px)↓ | 时间(ms)↓ |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| OpenCV EdgeDrawing | <u>96.6</u> | **91.5** | **89.8** | **76.3** | **0.976** | **0.666** | **1.96** | **0.79** | 93.99 |
+| Official EDSF | 94.9 | 64.4 | <u>64.4</u> | <u>59.3</u> | <u>0.969</u> | <u>0.610</u> | <u>2.38</u> | <u>1.14</u> | 147.62 |
+| OpenCV ximgproc.findEllipses | 71.2 | 64.4 | 61.0 | 25.4 | 0.927 | 0.296 | 5.15 | 2.30 | <u>66.30</u> |
+| Lab颜色概率+鲁棒拟合 | **98.3** | <u>86.4</u> | 45.8 | 44.1 | 0.857 | 0.246 | 14.66 | 5.86 | 155.50 |
+| Official AAMED | 61.0 | 5.1 | 3.4 | 0.0 | 0.000 | 0.000 | 192.52 | 188.39 | **52.75** |
 
+Lab的方法是单独前景的方法，只提取前景lab颜色空间。
 ### 2.2.5 定性实验
 ![image.png](https://img.zzliu.com/file/1782453211096_image.png)
+
+从实验结果看，每个专门的椭圆检测方法都非常垃圾，在简单的场景下无法做到高的检测，甚至在调完参后还会有FP，注意到检出率最高的还是一个完全和椭圆检测无关的基于颜色的方法，根据经验，可以将LAB作为一个ROI Proposal的方法，先用颜色分割出前景，再用椭圆检测方法去拟合前景的轮廓，这样可以大幅度提高召回率。
+
+
+### 2.3 算法改进
+按照模型的建议选择了一个更好的LAB检测器，新旧对比如下：
+| 项目 | 之前 `lab_probability + robust fit` | 现在 `strict Lab mask + fitEllipse` |
+|---|---|---|
+| Lab 模型 | 前景单高斯模型 | 前景 vs 背景 log likelihood ratio |
+| Lab 通道 | `L, a, b` 三通道 | 主要使用 `a, b`，更适合颜色稳定目标 |
+| 背景建模 | 没有显式背景模型 | 有背景环模型 |
+| 阈值意义 | Mahalanobis 距离阈值 | 前景-背景对数似然差阈值 |
+| ROI 机制 | 全图找所有 contour 再选 | 先用 Lab ROI proposer 找主 component |
+| 拟合点 | 每个候选 contour | ROI 主 component contour |
+| 拟合方法 | robust refit，剔除约 15% 离群点 | 直接 `fitEllipse` |
+| 候选选择 | 多候选打分选择 | top1 ROI component |
+| 主要问题 | 容易选错 component / mask 不稳定 | component 稳，但边界偏保守 |
+
+### 2.3.1 定量实验
+
+| 方法 | Lab 部分的作用 | 后端检测器 / 拟合器 | 检测正确 @IoU0.90 | IoU@0.90 | IoU@0.95 | Median MaskIoU | Median D95 px | Median center error px |
+|---|---|---|---:|---:|---:|---:|---:|---:|
+| **Lab ROI + OpenCV EdgeDrawing** | Lab 只提供 ROI crop | OpenCV `ximgproc.createEdgeDrawing().detectEllipses()` | **56 / 59** | **56 / 59** | **47 / 59** | **0.9818** | **1.8359** | **0.8587** |
+| **Lab mask + fitEllipse** | Lab mask 直接给 contour | `cv2.fitEllipse`，同 Lab 阈值 | 54 / 59 | 54 / 59 | 9 / 59 | 0.9344 | 4.8292 | 3.2620 |
+| **Lab ROI + tuned ximgproc** | Lab 提供 ROI crop | `cv2.ximgproc.findEllipses`，ROI 后端重调参 | 38 / 59 | 38 / 59 | — | 0.9277 | — | — |
+| **Lab ROI + original ximgproc** | Lab 提供 ROI crop | `cv2.ximgproc.findEllipses`，原先参数 | 37 / 59 | 37 / 59 | — | — | — | — |
+| **Lab ROI + EDSF-like** | Lab 提供 ROI crop | EdgeDrawing segments + robust ellipse fit | 30 / 59 | 30 / 59 | — | 0.9044 | — | — |
+
+改进后的Lab可以稳定的检测出测试集上的所有目标，但是如果直接发送给`fitEllipse`，会因为边缘点的离群点过多而导致拟合结果不稳定，后边串联一个EdgeDrawing精度会好很多。
