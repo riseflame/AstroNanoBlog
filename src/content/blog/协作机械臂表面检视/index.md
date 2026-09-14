@@ -173,14 +173,7 @@ mm，留一些冗余空间，注意还要把肘部关节也勾选上，否则机
   <source src="https://img.zzliu.com/file/1778320755218_ac6fcc5579886363ca0593ccd965d259.mp4" type="video/mp4" />
 </video>
 
-<iframe
-  src="https://www.youtube.com/embed/ZzedmKdZ9SM"
-  title="协作机械臂表面检视视频"
-  style="width:100%; aspect-ratio:16 / 9; border:0;"
-  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-  allowfullscreen
-  loading="lazy"
-></iframe>
+
 
 
 设置的各坐标系如下图所示，从正面看屏幕显示的也和实际机械臂位置相同：
@@ -191,3 +184,18 @@ mm，留一些冗余空间，注意还要把肘部关节也勾选上，否则机
 在执行运动规划时各个阶段如下图所示，MoveIT负责接收规划请求，目标点位等信息，发送给OMPL执行规划，OMPL执行规划算法，生成轨迹后发送回MoveIT进行检查，MoveIT再将轨迹发送给控制器执行。
 ![image.png](https://img.zzliu.com/file/1779774171014_image.png)
 
+
+# 视点规划相关
+
+![image.png](https://img.zzliu.com/file/1789364074382_image.png)
+
+![image.png](https://img.zzliu.com/file/1789363698729_image.png)
+# 效果展示
+<iframe
+  src="https://www.youtube.com/embed/ZzedmKdZ9SM"
+  title="协作机械臂表面检视视频"
+  style="width:100%; aspect-ratio:16 / 9; border:0;"
+  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+  allowfullscreen
+  loading="lazy"
+></iframe>
