@@ -1,7 +1,7 @@
 ---
 title: "LLM Diganose方向论文阅读笔记"
 description: "做benchmark真费脑子啊"
-date: "19/08/2026"
+date: "08/19/2026"
 ---
 
 # 一.  TSVer: A Benchmark for Fact Verification Against Time-Series Evidence
