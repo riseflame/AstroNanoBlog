@@ -173,6 +173,15 @@ mm，留一些冗余空间，注意还要把肘部关节也勾选上，否则机
   <source src="https://img.zzliu.com/file/1778320755218_ac6fcc5579886363ca0593ccd965d259.mp4" type="video/mp4" />
 </video>
 
+<iframe
+  src="https://www.youtube.com/embed/ZzedmKdZ9SM"
+  title="协作机械臂表面检视视频"
+  style="width:100%; aspect-ratio:16 / 9; border:0;"
+  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+  allowfullscreen
+  loading="lazy"
+></iframe>
+
 
 设置的各坐标系如下图所示，从正面看屏幕显示的也和实际机械臂位置相同：
 ![35558e26-b391-4d45-afe4-98f6a67ff980.png](https://img.zzliu.com/file/1778321023139_35558e26-b391-4d45-afe4-98f6a67ff980.png)
