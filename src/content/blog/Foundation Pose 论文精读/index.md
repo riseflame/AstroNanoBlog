@@ -25,8 +25,7 @@ translation \(t\)：描述物体原点相对于相机原点的位置偏移。
 - 上方 Rendered coarse pose：按照候选位姿渲染的物体 RGBD。
 - 下方 Pose conditioned input crop：从相机观测中裁剪出来的 RGBD。
 
-两路 Encoder 共享权重，提取特征后进行拼接，再经过卷积模块和Transformer。注意 Pose conditioned input crop 裁剪部分并不是 2D 目标检测出的水平框，而是根据物体 3 维中心点和尺寸投影到图像的框。
-
+两路 Encoder 共享权重，提取特征后进行拼接，再经过卷积模块和 Transformer。下方的 Pose conditioned input crop 根据当前候选位姿、物体尺寸和相机内参，从当前帧 RGBD 中计算并裁剪得到。第一帧先利用二维检测区域和深度信息初始化平移，再采样生成旋转候选，每个候选分别对应自己的裁剪区域。跟踪时使用上一帧位姿作为初始候选，无需逐帧检测。若执行多次修正迭代，则每次根据更新后的位姿重新计算裁剪区域。
 Encoder 后的特征过一个线性层后回归出更新的 rotation 和 translation，更新 504 个候选姿态：
 \[
 t^{+}=t+\Delta t
@@ -49,6 +48,27 @@ R^{+}=\Delta R\,R
 下面这个图就是消融掉不同预测做注意力的部分，后预测质量有所下降：
 ![image.png](https://img.zzliu.com/file/1791801124394_image.png)
 
+## 1.3 CNOS
+CNOS: A Strong Baseline for CAD-based Novel Object Segmentation 这是本文使用的零样本的方法 2023 ICCV WorkShop
+本文的网络图如下图所示
+![image.png](https://img.zzliu.com/file/1791963379181_image.png)
+Onbarding stage：同一个零件从正面、侧面、背面看，外观可能差别很大。因此，CNOS 会从多个视角渲染 CAD 模型，得到一组二维图像，也就是 templates，这个和 foundation pose 一样 也是初始化一个二十面体， 将物体放在中心，取 42 个顶点作为视点。
+接着，把每张模板送入 DINOv2，用它的 CLS token 作为整张图像的特征向量。
+
+Proposal stage：在真实图像里生成候选区域。
+对相机拍到的 RGB 图像，使用 SAM 或 FastSAM 生成一批分割掩码。
+然后，对每个候选区域：
+- 用掩码去掉背景。
+- 裁剪出候选区域，缩放并填充到统一尺寸。
+- 同样用 DINOv2 提取 CLS token。
+
+Matching stage：把每个候选区域的特征，与模板库中的特征计算余弦相似度。
+因为每个物体有多个视角模板，还需要先把多个模板的匹配分数汇总成一个物体分数，再选择分数最高的物体编号。
+最终，每个候选区域得到：
+\[
+(M_i,\ o_i,\ s_i)
+\]
+其中 \(M_i\) 是分割掩码，\(o_i\) 是物体编号，\(s_i\) 是匹配分数。掩码覆盖的是物体实际可见的部分，不会补全被遮挡的区域
 ## 二.实验
 ## 2.1 Pose tracking
 
