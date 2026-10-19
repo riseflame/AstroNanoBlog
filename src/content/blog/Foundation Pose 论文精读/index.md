@@ -1,8 +1,10 @@
 ---
-title: "Foundation Pose 论文笔记"
-description: "Nvidia yes"
+title: "6DoF 估计论文阅读笔记"
+description: "记录 6DoF 位姿估计相关论文的方法与实验。"
 date: "10/10/2026"
 ---
+
+# 一. FoundationPose
 
 这篇方法做的是6DoF姿态估计，论文要估计物体相对于相机的 6D 位姿：三个平移自由度和三个旋转自由度。FoundationPose 强调的是 novel objects，即通用位姿网络训练时未见过的新物体。使用时有两种条件：
 | 论文中的设置 | 新物体需要提供什么 |
@@ -12,9 +14,10 @@ date: "10/10/2026"
 
 Model-free 的路径也是通过外接一个 Neural Field 的方法将输入的信息建模成带纹理的 CAD 模型后沿着 Model-based 方法实现的。
 
-# 一.方法
+## 1.1 方法
+
 文章的整体思路是先生成多个姿态候选，然后不断精炼，我们先看候选生成的部分，如下图所示：
-## 1.1 Pose Hypothesis Generation
+### 1.1.1 Pose Hypothesis Generation
 ![image.png](https://img.zzliu.com/file/1791602016818_image.png)
 左侧输入的是 RGBD 的图像，按照文章介绍，需要先初始化物体的位姿，位姿包括rotation $R$：描述物体朝向，
 translation $t$：描述物体原点相对于相机原点的位置偏移。
@@ -38,7 +41,7 @@ $$
 
 根据补充材料，迭代 5 轮。
 
-## 1.2 Pose Selection
+### 1.1.2 Pose Selection
 在得到精炼的候选后，我们还需要选出得分最高的候选，
 ![image.png](https://img.zzliu.com/file/1791617696245_image.png)
 
@@ -50,7 +53,7 @@ $$
 下面这个图就是消融掉不同预测做注意力的部分，后预测质量有所下降：
 ![image.png](https://img.zzliu.com/file/1791801124394_image.png)
 
-## 1.3 CNOS
+### 1.1.3 CNOS
 CNOS: A Strong Baseline for CAD-based Novel Object Segmentation 这是本文使用的零样本的方法 2023 ICCV WorkShop
 本文的网络图如下图所示
 ![image.png](https://img.zzliu.com/file/1791963379181_image.png)
@@ -73,8 +76,10 @@ $$
 $$
 
 其中 $M_i$ 是分割掩码，$o_i$ 是物体编号，$s_i$ 是匹配分数。掩码覆盖的是物体实际可见的部分，不会补全被遮挡的区域
-## 二.实验
-## 2.1 Pose tracking
+
+## 1.2 实验
+
+### 1.2.1 Pose tracking
 
 作者说明：跟踪时，把上一帧的位姿用于渲染，再与当前帧比较，通过修正网络得到当前帧位姿。也就是省略掉 Hypothesis 产生的部分，直接预测修正量，省略掉后边的排序和打分环节。
 
@@ -97,8 +102,10 @@ $$
 - 候选位姿修正：约 **880 ms**。
 - 候选打分和选择：约 **420 ms**。
 
-## 2.2 Unseen Object
+### 1.2.2 Unseen Object
 我比较关注零样本目标的检测效果，4.3 节的实验说明了在 Unseen objects 上的检测效果，AR (average recall) 是符合三种位姿阈值 recall，越高越好。
 ![image.png](https://img.zzliu.com/file/1791855255690_image.png)
 
 不过这个实验的检测器使用的是 Mask-Rcnn并不是无监督的检测器，所以整体来说并不算是零样本，文章还提供可以通过 CAD 模型来做零样本检测的 CNOS 方法作为检测器。
+
+# 二. 第二篇论文（待补充）
