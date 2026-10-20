@@ -1,6 +1,6 @@
 ---
 title: "6DoF 估计论文阅读笔记"
-description: "记录 6DoF 位姿估计相关论文的方法与实验。"
+description: "I hit the spotlight all night, ready to go"
 date: "10/10/2026"
 ---
 
@@ -108,4 +108,60 @@ $$
 
 不过这个实验的检测器使用的是 Mask-Rcnn并不是无监督的检测器，所以整体来说并不算是零样本，文章还提供可以通过 CAD 模型来做零样本检测的 CNOS 方法作为检测器。
 
-# 二. 第二篇论文（待补充）
+# 二. RACE-6D: Real-time Accurate Coarse-to-finE object 6D Pose Transform
+与 foundation pose 的 track 依赖于上一帧的检测结果不同，本文是独立的对每一帧图像进行姿态估计，文章主打的卖点就是实时性，在 3090 上可以跑到八十多FPS。这篇文章发表在 2026 的 cvpr finding 上边。
+## 2.1 方法
+文章整体分为两个阶段，coarse stage 和 refine stage。网络图如下图所示：
+![image.png](https://img.zzliu.com/file/1792394693781_image.png)
+它分为四步：
+1. 提取整张图的特征。 Backbone 和 Encoder 生成多尺度特征，供检测、关键点和位姿预测共同使用。
+2. 产生粗略预测。 多个预测头分别输出类别、二维框、平移、关键点和旋转。
+3. 选择候选对象。 根据分类分数选出前 \(N\) 个 query。这里可以把 query 理解为一个候选物体对应的特征向量。
+4. 细化预测。 Decoder 重新读取相关图像特征，逐层修正粗略结果。
+很多方法先检测物体，再针对每个物体裁剪图像、运行位姿网络或几何求解器。物体数量增加时，这些处理会反复执行。
+
+### 2.1.1 Coarse Stage
+首先看 coarse stage 这里通过 backbone encoder 提取出特征后 直接并行的送入分类，目标检测，预测 Translation，和预测关键点的各个 head 当中以保证速度。
+
+
+这些关键点来自物体三维包围盒及其边上的插值点，共 32 个。网络预测的是它们投影到图像中的位置。 旋转矩阵预测和关键点预测是串行的，这里对特征中的所有位置都预测关键点，然后 concat 到一起送入旋转 head 中。
+![image.png](https://img.zzliu.com/file/1792396343905_image.png)
+
+为什么有帮助？以一个盒子为例，包围盒各角点在图像中的相对位置，包含了朝向信息：哪个面更宽、哪条边倾斜、哪些角点靠得更近，都与三维旋转有关。
+
+并且文章中的关键点预测都并不是直接预测坐标，而是预测一个 0-1 的比例，表示在 boundingbox 内部的位置，这样做的好处是降低了物体远近变化给学习带来的难度，可以让预测忽略大小。
+
+对 translation 也采用同样的设置，rx，ry 都是百分数。
+
+### 2.1.2 Query Selection
+展平后的特征尺寸为[S, C]，\(S\) 是所有特征位置的数量，\(C\) 是每个位置的特征维度。
+1. \(S\) 是所有特征位置的数量，\(C\) 是每个位置的特征维度。分类头会为每个位置预测各物体类别的分数：
+默认选择方式是：每个位置取最高类别分数，再按这个分数排序。
+
+2. 保留分数最高的 N 个位置
+
+3. 把选中的特征和粗预测一起交给 Decoder
+对于每个选中的候选，保留：
+- 对应位置的特征，作为 object query 的初始内容；
+- 粗预测的物体框、关键点、旋转和平移，作为后续细化的参考值。
+
+### 2.1.3 Refine Stage
+这里会经过多次 Refine 每一层内的结构是：
+``` python
+Object queries
+      ↓ Self-attention
+候选之间交换信息
+      ↓ Deformable cross-attention
+根据当前框，从整图特征中读取相关信息
+      ↓ FFN
+进一步处理特征
+      ↓ 各个预测头
+
+```
+self-attention 用来交换各个 query 内部的信息，帮助消除重复预测，最后的结果更新 query。
+接着是 Deformable cross-attention：重新从图像中获取证据。Query Selection 选出来的 query 只是一个特征向量。为了修正结果，它需要继续读取图像特征。
+这里使用当前预测框作为参考，由 query 预测采样位置和权重，在多尺度特征图上读取少量位置，再汇总到 query 中。
+然后根据 refine 后的 query 重新进入预测头，预测各个参数，后继续进行 refine。总计会 refine 3 次。
+
+这里对于深度的 refine 是特殊的，如下图所是，每层 decoer 会输出 33 个调整档位，然后会用一个小型的 mlp 对每个调整档位打分，最后算出的加权调整深度才会被加到现有的深度上。
+![image.png](https://img.zzliu.com/file/1792397189129_image.png)
