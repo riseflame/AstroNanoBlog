@@ -159,9 +159,9 @@ Object queries
 
 ```
 self-attention 用来交换各个 query 内部的信息，帮助消除重复预测，最后的结果更新 query。
-接着是 Deformable cross-attention：重新从图像中获取证据。Query Selection 选出来的 query 只是一个特征向量。为了修正结果，它需要继续读取图像特征。
-这里使用当前预测框作为参考，由 query 预测采样位置和权重，在多尺度特征图上读取少量位置，再汇总到 query 中。
+接着是 Deformable cross-attention：Query Selection 选出来的 query 只是一个特征向量。为了修正结果，它需要继续读取图像特征。这里使用当前预测框作为参考，由 query 预测采样位置（bounding box）和权重，在多尺度特征图上读取少量位置，再通过 cross attention汇总到 query 中。
+
 然后根据 refine 后的 query 重新进入预测头，预测各个参数，后继续进行 refine。总计会 refine 3 次。
 
-这里对于深度的 refine 是特殊的，如下图所是，每层 decoer 会输出 33 个调整档位，然后会用一个小型的 mlp 对每个调整档位打分，最后算出的加权调整深度才会被加到现有的深度上。
+这里对于深度（模型坐标中心点）的 refine 是特殊的，如下图所是，每层 decoer 会输出 33 个调整档位，然后会用一个小型的 mlp 对每个调整档位打分，最后算出的加权调整深度才会被加到现有的深度上。
 ![image.png](https://img.zzliu.com/file/1792397189129_image.png)

@@ -24,7 +24,7 @@ const firstDepth = Math.min(...headings.map((heading) => heading.depth));
       <ol>
         {headings.map((heading) => (
           <li style={`--level: ${Math.min(heading.depth - firstDepth, 4)}`}>
-            <a href={`#${heading.slug}`} data-toc-link>{heading.text}</a>
+            <a href={`#${heading.slug}`} title={heading.text} data-toc-link>{heading.text}</a>
           </li>
         ))}
       </ol>
@@ -125,7 +125,9 @@ const firstDepth = Math.min(...headings.map((heading) => heading.depth));
     border-radius: 0.5rem;
     font-size: 0.8125rem;
     line-height: 1.5;
-    overflow-wrap: anywhere;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
     transition: background-color 150ms ease, color 150ms ease;
   }
 

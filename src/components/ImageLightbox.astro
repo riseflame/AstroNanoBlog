@@ -1,0 +1,144 @@
+<dialog class="image-lightbox" aria-label="图片预览">
+  <button class="lightbox-close" type="button" aria-label="关闭图片预览" autofocus>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+      <path d="m6 6 12 12M6 18 18 6" />
+    </svg>
+  </button>
+  <img class="lightbox-image" alt="" />
+</dialog>
+
+<style>
+  .image-lightbox {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100dvh;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    padding: 3.5rem 1rem 1rem;
+    border: 0;
+    background: transparent;
+    color: white;
+  }
+
+  .image-lightbox[open] {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .image-lightbox::backdrop {
+    background: rgb(0 0 0 / 85%);
+  }
+
+  .lightbox-image {
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+  }
+
+  .lightbox-close {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 50%;
+    background: rgb(255 255 255 / 15%);
+    cursor: pointer;
+  }
+
+  .lightbox-close:hover {
+    background: rgb(255 255 255 / 25%);
+  }
+
+  .lightbox-close svg {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+
+  .lightbox-close:focus-visible,
+  :global(article img[data-image-zoom]:focus-visible) {
+    outline: 2px solid currentColor;
+    outline-offset: 4px;
+  }
+
+  :global(article img[data-image-zoom]) {
+    cursor: zoom-in;
+  }
+</style>
+
+<script>
+  let cleanup: (() => void) | undefined;
+
+  function initImageLightbox() {
+    cleanup?.();
+    const dialog = document.querySelector<HTMLDialogElement>(".image-lightbox");
+    const preview = dialog?.querySelector<HTMLImageElement>(".lightbox-image");
+    const closeButton = dialog?.querySelector<HTMLButtonElement>(".lightbox-close");
+    if (!dialog || !preview || !closeButton) return;
+
+    const controller = new AbortController();
+    const options = { signal: controller.signal };
+    let sourceImage: HTMLImageElement | undefined;
+    let previousOverflow = "";
+
+    function restorePage() {
+      if (!sourceImage) return;
+      document.documentElement.style.overflow = previousOverflow;
+      sourceImage.focus({ preventScroll: true });
+      sourceImage = undefined;
+      preview!.removeAttribute("src");
+    }
+
+    function openImage(image: HTMLImageElement) {
+      if (dialog!.open) return;
+      const src = image.currentSrc || image.src;
+      if (!src) return;
+      sourceImage = image;
+      previousOverflow = document.documentElement.style.overflow;
+      preview!.src = src;
+      preview!.alt = image.alt;
+      dialog!.showModal();
+      document.documentElement.style.overflow = "hidden";
+    }
+
+    document.querySelectorAll<HTMLImageElement>("article img").forEach((image) => {
+      // Preserve images that already act as links or other controls.
+      if (image.parentElement?.closest("a, button, [role='button']")) return;
+      image.dataset.imageZoom = "";
+      image.tabIndex = 0;
+      image.setAttribute("role", "button");
+      image.setAttribute("aria-haspopup", "dialog");
+      image.setAttribute("aria-label", image.alt ? `放大图片：${image.alt}` : "放大图片");
+      image.addEventListener("click", () => openImage(image), options);
+      image.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          openImage(image);
+        }
+      }, options);
+    });
+
+    closeButton.addEventListener("click", () => dialog.close(), options);
+    dialog.addEventListener("click", (event) => {
+      if (event.target === dialog) dialog.close();
+    }, options);
+    dialog.addEventListener("close", restorePage, options);
+
+    cleanup = () => {
+      controller.abort();
+      if (dialog.open) dialog.close();
+      restorePage();
+    };
+  }
+
+  initImageLightbox();
+  document.addEventListener("astro:page-load", initImageLightbox);
+  document.addEventListener("astro:before-swap", () => cleanup?.());
+</script>
