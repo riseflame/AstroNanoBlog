@@ -4,7 +4,15 @@
       <path d="m6 6 12 12M6 18 18 6" />
     </svg>
   </button>
-  <img class="lightbox-image" alt="" />
+  <div class="lightbox-controls" aria-label="图片缩放">
+    <button type="button" data-zoom-out aria-label="缩小图片">−</button>
+    <button type="button" data-zoom-reset aria-label="重置图片缩放和位置">100%</button>
+    <button type="button" data-zoom-in aria-label="放大图片">+</button>
+  </div>
+  <div class="lightbox-stage">
+    <img class="lightbox-image" alt="" draggable="false" />
+  </div>
+  <p class="lightbox-hint">滚轮缩放 · 按住图片拖动</p>
 </dialog>
 
 <style>
@@ -16,16 +24,22 @@
     max-width: none;
     max-height: none;
     margin: 0;
-    padding: 3.5rem 1rem 1rem;
+    padding: 0;
+    overflow: hidden;
     border: 0;
     background: transparent;
     color: white;
   }
 
-  .image-lightbox[open] {
+  .lightbox-stage {
+    position: absolute;
+    inset: 3.5rem 1rem 3rem;
     display: flex;
     align-items: center;
     justify-content: center;
+    overflow: hidden;
+    touch-action: none;
+    user-select: none;
   }
 
   .image-lightbox::backdrop {
@@ -38,10 +52,54 @@
     max-width: 100%;
     max-height: 100%;
     object-fit: contain;
+    flex-shrink: 0;
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+    transform-origin: center;
+  }
+
+  .lightbox-image.is-dragging {
+    cursor: grabbing;
+  }
+
+  .lightbox-controls {
+    position: absolute;
+    z-index: 1;
+    top: 0.75rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    border-radius: 1.5rem;
+    background: rgb(0 0 0 / 65%);
+  }
+
+  .lightbox-controls button {
+    min-width: 2.75rem;
+    height: 2.75rem;
+    padding: 0 0.75rem;
+    cursor: pointer;
+  }
+
+  .lightbox-controls button:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+
+  .lightbox-hint {
+    position: absolute;
+    bottom: 0.75rem;
+    width: 100%;
+    margin: 0;
+    text-align: center;
+    font-size: 0.8125rem;
+    pointer-events: none;
   }
 
   .lightbox-close {
     position: absolute;
+    z-index: 1;
     top: 0.75rem;
     right: 0.75rem;
     display: grid;
@@ -63,6 +121,7 @@
   }
 
   .lightbox-close:focus-visible,
+  .lightbox-controls button:focus-visible,
   :global(article img[data-image-zoom]:focus-visible) {
     outline: 2px solid currentColor;
     outline-offset: 4px;
@@ -81,15 +140,62 @@
     const dialog = document.querySelector<HTMLDialogElement>(".image-lightbox");
     const preview = dialog?.querySelector<HTMLImageElement>(".lightbox-image");
     const closeButton = dialog?.querySelector<HTMLButtonElement>(".lightbox-close");
-    if (!dialog || !preview || !closeButton) return;
+    const stage = dialog?.querySelector<HTMLDivElement>(".lightbox-stage");
+    const zoomIn = dialog?.querySelector<HTMLButtonElement>("[data-zoom-in]");
+    const zoomOut = dialog?.querySelector<HTMLButtonElement>("[data-zoom-out]");
+    const zoomReset = dialog?.querySelector<HTMLButtonElement>("[data-zoom-reset]");
+    if (!dialog || !preview || !closeButton || !stage || !zoomIn || !zoomOut || !zoomReset) return;
 
     const controller = new AbortController();
     const options = { signal: controller.signal };
     let sourceImage: HTMLImageElement | undefined;
     let previousOverflow = "";
+    let scale = 1;
+    let offsetX = 0;
+    let offsetY = 0;
+    let drag: { id: number; x: number; y: number; offsetX: number; offsetY: number } | undefined;
+    let dragged = false;
+
+    function updateTransform() {
+      const limitX = Math.max(0, (preview!.offsetWidth * scale - stage!.clientWidth) / 2);
+      const limitY = Math.max(0, (preview!.offsetHeight * scale - stage!.clientHeight) / 2);
+      offsetX = Math.max(-limitX, Math.min(limitX, offsetX));
+      offsetY = Math.max(-limitY, Math.min(limitY, offsetY));
+      preview!.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${scale})`;
+      zoomReset!.textContent = `${Math.round(scale * 100)}%`;
+      zoomIn!.disabled = scale >= 8;
+      zoomOut!.disabled = scale <= 1;
+    }
+
+    function resetImage() {
+      scale = 1;
+      offsetX = 0;
+      offsetY = 0;
+      updateTransform();
+    }
+
+    function zoomImage(nextScale: number, clientX?: number, clientY?: number) {
+      const bounds = stage!.getBoundingClientRect();
+      const x = (clientX ?? bounds.left + bounds.width / 2) - bounds.left - bounds.width / 2;
+      const y = (clientY ?? bounds.top + bounds.height / 2) - bounds.top - bounds.height / 2;
+      const clampedScale = Math.max(1, Math.min(8, nextScale));
+      const ratio = clampedScale / scale;
+      offsetX = x - (x - offsetX) * ratio;
+      offsetY = y - (y - offsetY) * ratio;
+      scale = clampedScale;
+      updateTransform();
+    }
+
+    function endDrag() {
+      if (drag && preview!.hasPointerCapture(drag.id)) preview!.releasePointerCapture(drag.id);
+      drag = undefined;
+      preview!.classList.remove("is-dragging");
+    }
 
     function restorePage() {
       if (!sourceImage) return;
+      endDrag();
+      resetImage();
       document.documentElement.style.overflow = previousOverflow;
       sourceImage.focus({ preventScroll: true });
       sourceImage = undefined;
@@ -105,6 +211,7 @@
       preview!.src = src;
       preview!.alt = image.alt;
       dialog!.showModal();
+      resetImage();
       document.documentElement.style.overflow = "hidden";
     }
 
@@ -126,8 +233,40 @@
     });
 
     closeButton.addEventListener("click", () => dialog.close(), options);
+    zoomIn.addEventListener("click", () => zoomImage(scale * 1.25), options);
+    zoomOut.addEventListener("click", () => zoomImage(scale / 1.25), options);
+    zoomReset.addEventListener("click", resetImage, options);
+    preview.addEventListener("load", updateTransform, options);
+    window.addEventListener("resize", () => {
+      if (dialog.open) updateTransform();
+    }, options);
+    stage.addEventListener("wheel", (event) => {
+      event.preventDefault();
+      const delta = event.deltaY * (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? stage.clientHeight : 1);
+      zoomImage(scale * Math.exp(-Math.max(-100, Math.min(100, delta)) * 0.005), event.clientX, event.clientY);
+    }, { ...options, passive: false });
+    dialog.addEventListener("pointerdown", () => { dragged = false; }, options);
+    preview.addEventListener("pointerdown", (event) => {
+      if (event.button !== 0 || drag) return;
+      event.preventDefault();
+      drag = { id: event.pointerId, x: event.clientX, y: event.clientY, offsetX, offsetY };
+      preview.setPointerCapture(event.pointerId);
+      preview.classList.add("is-dragging");
+    }, options);
+    preview.addEventListener("pointermove", (event) => {
+      if (!drag || drag.id !== event.pointerId) return;
+      const dx = event.clientX - drag.x;
+      const dy = event.clientY - drag.y;
+      if (Math.hypot(dx, dy) > 3) dragged = true;
+      offsetX = drag.offsetX + dx;
+      offsetY = drag.offsetY + dy;
+      updateTransform();
+    }, options);
+    preview.addEventListener("pointerup", endDrag, options);
+    preview.addEventListener("pointercancel", endDrag, options);
+    preview.addEventListener("lostpointercapture", endDrag, options);
     dialog.addEventListener("click", (event) => {
-      if (event.target === dialog) dialog.close();
+      if (!dragged && (event.target === dialog || event.target === stage)) dialog.close();
     }, options);
     dialog.addEventListener("close", restorePage, options);
 
