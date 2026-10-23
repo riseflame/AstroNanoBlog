@@ -2,7 +2,7 @@
 title: "GPT拼车指南"
 description: "各个软件如何使用第三方API的指南"
 date: "May 28 2026"
-demoURL: "api.zzliu.com"
+demoURL: "https://api.zzliu.com"
 repoURL: "https://github.com/markhorn-dev/astro-sphere"
 ---
 
